@@ -2,14 +2,13 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Best Practice: Load the API key from environment variables
-api_key = os.getenv("NVIDIA_API_KEY", "your_fallback_api_key_here")
+
+load_dotenv()
 
 client = OpenAI(
   base_url = "https://integrate.api.nvidia.com/v1",
-  api_key = os.getenv(api_key)
+  api_key = os.getenv("api_key")
 )
 
 def talk(msg: str):
