@@ -5,18 +5,18 @@ client = OpenAI(
   api_key = "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"
 )
 
+def talk(msg):
+    completion = client.chat.completions.create(
+    model="deepseek-ai/deepseek-v4-flash",
+    messages=[{"role":"user","content":msg}],
+    temperature=1,
+    top_p=0.95,
+    max_tokens=16384,
+    extra_body={"chat_template_kwargs":{"thinking":True,"reasoning_effort":"high"}},
+    stream=False
+    )
 
-completion = client.chat.completions.create(
-  model="deepseek-ai/deepseek-v4-flash",
-  messages=[{"role":"user","content":""}],
-  temperature=1,
-  top_p=0.95,
-  max_tokens=16384,
-  extra_body={"chat_template_kwargs":{"thinking":True,"reasoning_effort":"high"}},
-  stream=False
-)
-
-reasoning = getattr(completion.choices[0].message, "reasoning", None) or getattr(completion.choices[0].message, "reasoning_content", None)
-if reasoning:
-  print(reasoning)
-print(completion.choices[0].message.content)
+    reasoning = getattr(completion.choices[0].message, "reasoning", None) or getattr(completion.choices[0].message, "reasoning_content", None)
+    if reasoning:
+        print(reasoning)
+    print(completion.choices[0].message.content)
