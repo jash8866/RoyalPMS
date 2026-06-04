@@ -41,30 +41,22 @@ def post_openrouter(payload: dict) -> dict:
 
 
 def talk(msg):
-    first_payload = {
-        "model": "google/gemma-4-31b-it:free",
-        "messages": [{"role": "user", "content": msg}],
+    system_prompt = "You are a helpful, brilliant AI assistant. Always double-check your logic."
+
+    payload = {
+        "model": "openai/gpt-oss-120b:free",  # Change this to your preferred model
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": msg}
+        ],
         "reasoning": {"enabled": True},
     }
 
-    first_response = post_openrouter(first_payload)
-    assistant_message = first_response.get("choices", [{}])[0].get("message", {})
-
-    messages = [
-        {"role": "user", "content": msg},
-        {
-            "role": "assistant",
-            "content": assistant_message.get("content"),
-            "reasoning_details": assistant_message.get("reasoning_details"),
-        },
-        {"role": "user", "content": "Are you sure? Think carefully."},
-    ]
-
-    second_payload = {
-        "model": "openai/gpt-oss-120b:free",
-        "messages": messages,
-        "reasoning": {"enabled": True},
-    }
-    second_response = post_openrouter(second_payload)
-    assistant_message2 = second_response.get("choices", [{}])[0].get("message", {})
-    return assistant_message2.get("content", "")
+    # Make the single API call
+    response = post_openrouter(payload)
+    
+    # Extract the message from the response
+    assistant_message = response.get("choices", [{}])[0].get("message", {})
+    
+    # Return just the text content
+    return assistant_message.get("content", "")
