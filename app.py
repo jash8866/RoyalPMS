@@ -10,7 +10,7 @@ def read_root():
     return {"message": "Hello world"}
 
 @app.get("/ai")
-def idk(msg: str):
+def chat(msg: str):
     try:
         return PlainTextResponse(talk(msg))
     except AIServiceError:

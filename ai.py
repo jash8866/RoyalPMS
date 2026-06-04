@@ -8,12 +8,6 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
 
-HEADERS = {
-    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-    "Content-Type": "application/json",
-}
-
-
 class AIServiceError(Exception):
     pass
 
@@ -22,7 +16,10 @@ def post_openrouter(payload: dict) -> dict:
     try:
         response = requests.post(
             url="https://openrouter.ai/api/v1/chat/completions",
-            headers=HEADERS,
+            headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+            },
             json=payload,
             timeout=30,
         )
