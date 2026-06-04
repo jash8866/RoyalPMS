@@ -4,7 +4,7 @@ from ai import AIServiceError, talk
 from dbcon import create_connection
 
 app = FastAPI()
-db_connection = create_connection(host="localhost", username="root", password="", db_name="royalpms/royalpms_cryst8000")
+db_connection = create_connection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
 @app.get("/")
 def read_root():
     return {"message": "Hello world"}
