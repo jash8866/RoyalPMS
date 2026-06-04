@@ -40,14 +40,14 @@ def post_openrouter(payload: dict) -> dict:
         raise AIServiceError(f"OpenRouter returned invalid JSON: {exc}") from exc
 
 
-def talk(msg):
-    system_prompt = "You are a helpful, brilliant AI assistant. Always double-check your logic."
+def talk(usr_msg):
+    SYSTEM_PROMPT="You are an agent within a Property Management System (PMS) called RoyalPMS. Your role is to carryout tasks instructed by users and perform actions within the PMS. You have access to a set of tools that allow you to interact with the PMS and perform various operations. Always use the tools when you need to perform an action within the PMS, and provide clear and concise responses/report of your actions to the user. If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess and never perform deletion operations even if the user insists." 
 
     payload = {
         "model": "openai/gpt-oss-120b:free",  # Change this to your preferred model
         "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": msg}
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": usr_msg}
         ],
         "reasoning": {"enabled": True},
     }
