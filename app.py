@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-from ai import talk
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
+from ai import AIServiceError, talk
 
 app = FastAPI()
 
@@ -10,4 +10,9 @@ def read_root():
 
 @app.get("/ai")
 def idk(msg: str):
-    return StreamingResponse(talk(msg), media_type="text/plain")
+    try:
+        return PlainTextResponse(talk(msg))
+    except AIServiceError:
+        return PlainTextResponse(
+            "The AI service is temporarily unavailable. Please try again in a few moments."
+        )

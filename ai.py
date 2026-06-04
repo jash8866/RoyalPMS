@@ -1,32 +1,70 @@
-from openai import OpenAI
 import os
 from dotenv import load_dotenv
-
-# Best Practice: Load the API key from environment variables
+import requests
 
 load_dotenv()
 
-client = OpenAI(
-  base_url = "https://integrate.api.nvidia.com/v1",
-  api_key = os.getenv("api_key")
-)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
 
-def talk(msg: str):
-    completion = client.chat.completions.create(
-        model="z-ai/glm-5.1",
-        messages=[{"role":"user","content":msg}],
-        temperature=1,
-        top_p=1,
-        max_tokens=16384,
-        stream=True
-    )
+HEADERS = {
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Content-Type": "application/json",
+}
 
-    for chunk in completion:
-        if not getattr(chunk, "choices", None):
-            continue
-        if len(chunk.choices) == 0 or getattr(chunk.choices[0], "delta", None) is None:
-            continue
-        delta = chunk.choices[0].delta
-        if getattr(delta, "content", None) is not None:
-            # YIELD the content instead of printing it
-            yield delta.content
+
+class AIServiceError(Exception):
+    pass
+
+
+def post_openrouter(payload: dict) -> dict:
+    try:
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers=HEADERS,
+            json=payload,
+            timeout=30,
+        )
+    except requests.RequestException as exc:
+        raise AIServiceError(f"OpenRouter request failed: {exc}") from exc
+
+    if response.status_code != 200:
+        raise AIServiceError(
+            f"OpenRouter returned status {response.status_code}: {response.text}"
+        )
+
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise AIServiceError(f"OpenRouter returned invalid JSON: {exc}") from exc
+
+
+def talk(msg):
+    first_payload = {
+        "model": "google/gemma-4-31b-it:free",
+        "messages": [{"role": "user", "content": msg}],
+        "reasoning": {"enabled": True},
+    }
+
+    first_response = post_openrouter(first_payload)
+    assistant_message = first_response.get("choices", [{}])[0].get("message", {})
+
+    messages = [
+        {"role": "user", "content": msg},
+        {
+            "role": "assistant",
+            "content": assistant_message.get("content"),
+            "reasoning_details": assistant_message.get("reasoning_details"),
+        },
+        {"role": "user", "content": "Are you sure? Think carefully."},
+    ]
+
+    second_payload = {
+        "model": "openai/gpt-oss-120b:free",
+        "messages": messages,
+        "reasoning": {"enabled": True},
+    }
+    second_response = post_openrouter(second_payload)
+    assistant_message2 = second_response.get("choices", [{}])[0].get("message", {})
+    return assistant_message2.get("content", "")
