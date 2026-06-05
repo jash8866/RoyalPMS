@@ -83,6 +83,17 @@ tools = [
                 "required": ["guest_name"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_database_schema",
+            "description": "Retrieve the schema of the database",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
     }
 ]
 
@@ -120,7 +131,8 @@ def search_reservations(guest_name):
 
 
 available_tools = {
-    "search_reservations": search_reservations
+    "search_reservations": search_reservations,
+    "get_database_schema": get_database_schema
 }
 
 
