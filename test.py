@@ -30,12 +30,17 @@ MODEL = "openai/gpt-oss-120b:free"
 # - Conversations should be strictly regarding the PMS only and should not deviate to other topics.
 # """
 
-SYSTEM_PROMPT = """
-You are an agent within a Property Management System (PMS) called RoyalPMS.
+db=DatabaseConnection()
+db.connect()
+db_schema=db.get_database_schema()
+    
+SYSTEM_PROMPT="""You are an agent within a Property Management System (PMS) called RoyalPMS.
 
 Your role is to carryout tasks instructed by users and perform actions within the PMS.
 
 You have access to a set of tools that allow you to interact with the PMS and perform various operations.
+
+Here is the exact structure of my database:{db_schema}
 
 Rules:
 - Always use the tools when you need to perform an action within the PMS
@@ -55,7 +60,7 @@ reservations = db.fetch_reservations()
 guests = db.fetch_guests()
 for guest in guests:
     print(guest)
-    input("...")
+    a=input("...")
 
 
 # =====================================================

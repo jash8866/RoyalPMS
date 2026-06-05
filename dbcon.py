@@ -2,11 +2,11 @@ import mysql.connector
 from mysql.connector import Error
 
 class DatabaseConnection:
-    def __init__(self, host, username, password, db_name):
-        self.host = host
-        self.username = username
-        self.password = password
-        self.db_name = db_name
+    def __init__(self):
+        self.host = "localhost"
+        self.username = "root"
+        self.password = ""
+        self.db_name = "royalpms_cryst8000"
         self.connection = None
 
     def connect(self):
