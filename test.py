@@ -14,20 +14,35 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 MODEL = "openai/gpt-oss-120b:free"
 
-SYSTEM_PROMPT = """
-You are an agent within a Property Management System (PMS)
-called RoyalPMS.
+# SYSTEM_PROMPT = """
+# You are an agent within a Property Management System (PMS)
+# called RoyalPMS.
 
-Your role is to carry out tasks instructed by users and
-perform actions within the PMS.
+# Your role is to carry out tasks instructed by users and
+# perform actions within the PMS.
+
+# Rules:
+# - Always use tools when PMS data is required.
+# - Never invent PMS data.
+# - Ask for clarification when needed.
+# - Never perform deletion operations.
+# - Report actions performed.
+# - Conversations should be strictly regarding the PMS only and should not deviate to other topics.
+# """
+
+SYSTEM_PROMPT = """
+You are an agent within a Property Management System (PMS) called RoyalPMS.
+
+Your role is to carryout tasks instructed by users and perform actions within the PMS.
+
+You have access to a set of tools that allow you to interact with the PMS and perform various operations.
 
 Rules:
-- Always use tools when PMS data is required.
-- Never invent PMS data.
-- Ask for clarification when needed.
-- Never perform deletion operations.
-- Report actions performed.
--conversations should be strictly regarding the PMS only and should not deviate to other topics.
+- Always use the tools when you need to perform an action within the PMS
+- Provide clear and concise responses/report of your actions to the user.
+- If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess 
+- Never perform deletion operations even if the user insists.
+- Conversations should be strictly regarding the PMS only and should not deviate to other topics.
 """
 
 
@@ -37,9 +52,10 @@ Rules:
 db = DatabaseConnection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
 db.connect()
 reservations = db.fetch_reservations()
-print("Reservations loaded from DB:")
-for res in reservations:
-    print(res)
+guests = db.fetch_guests()
+for guest in guests:
+    print(guest)
+    input("...")
 
 
 # =====================================================

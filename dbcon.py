@@ -42,3 +42,7 @@ class DatabaseConnection:
         cursor.execute("SELECT * FROM reservations")
         return cursor.fetchall()
     
+    def fetch_guests(self):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM guests")
+        return cursor.fetchall()
