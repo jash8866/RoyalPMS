@@ -1,6 +1,9 @@
+from multiprocessing.dummy import connection
 import os
 import json
 import requests
+from dbcon import *
+
 
 
 # =====================================================
@@ -29,21 +32,12 @@ Rules:
 
 
 # =====================================================
-# FAKE DATABASE
+#  DATABASE
 # =====================================================
+db = DatabaseConnection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
+db.connect()
+print("Database schema:", json.dumps(db.get_database_schema(), indent=2))
 
-reservations = [
-    {
-        "reservation_number": "RES-040626-001",
-        "guest_name": "Ayush Chauhan",
-        "status": "Checked Out"
-    },
-    {
-        "reservation_number": "RES-040626-002",
-        "guest_name": "N A",
-        "status": "Confirmed"
-    }
-]
 
 
 # =====================================================
