@@ -45,8 +45,11 @@ class DatabaseConnection:
         query = f"SELECT * FROM {table_name}"
         
         if filters:
-            filter_clauses = [f"{col} = %s" for col in filters.keys()]
+            filter_clauses = [f"{col} LIKE %s" for col in filters.keys()]
             query += " WHERE " + " AND ".join(filter_clauses)
+            print("Executing query:", query)
+            print("With filters:", filters)
+            print("With filter values:", tuple(filters.values()))
             cursor.execute(query, tuple(filters.values()))
         else:
             cursor.execute(query)

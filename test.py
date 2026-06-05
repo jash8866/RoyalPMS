@@ -48,19 +48,22 @@ Rules:
 - If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess 
 - Never perform deletion operations even if the user insists.
 - Conversations should be strictly regarding the PMS only and should not deviate to other topics.
+-do not display the database schema to the user but use it to understand how to use the tools effectively and interact with the database when needed.
+-Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correctly formatted based on the database schema provided.
+-disply results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
 """
 
 
 # =====================================================
 #  DATABASE
 # =====================================================
-db = DatabaseConnection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
-db.connect()
-reservations = db.fetch_reservations()
-guests = db.fetch_guests()
-for guest in guests:
-    print(guest)
-    a=input("...")
+# db = DatabaseConnection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
+# db.connect()
+# reservations = db.fetch_reservations()
+# guests = db.fetch_guests()
+# for guest in guests:
+#     print(guest)
+#     a=input("...")
 
 
 # =====================================================
@@ -68,22 +71,6 @@ for guest in guests:
 # =====================================================
 
 tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "search_reservations",
-            "description": "Search reservations by guest name",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "guest_name": {
-                        "type": "string"
-                    }
-                },
-                "required": ["guest_name"]
-            }
-        }
-    },
     {
         "type": "function",
         "function": {
@@ -109,35 +96,7 @@ tools = [
 # =====================================================
 # REAL TOOL IMPLEMENTATIONS
 # =====================================================
-
-def search_reservations(guest_name):
-
-    matches = []
-
-    for reservation in reservations:
-
-        if guest_name.lower() in reservation["guest_name"].lower():
-            matches.append(reservation)
-
-        return {
-            "success": True,
-
-            "matches": matches,
-
-            # frontend will consume this
-            "ui_actions": [
-                {
-                    "type": "navigate",
-                    "page": "reservations"
-                },
-                {
-                    "type": "filter_reservations",
-                    "guest_name": guest_name
-                }
-            ]
-        }
     
-
 def display_table_data(table_name, filters=None):
     db.connect()
     data = db.fetch_table_data(table_name, filters)
@@ -159,7 +118,7 @@ def display_table_data(table_name, filters=None):
     }
 
 available_tools = {
-    "search_reservations": search_reservations,
+    # "search_reservations": search_reservations,
     "display_table_data": display_table_data
 }
 
@@ -281,7 +240,8 @@ def process_ai():
                     "\nUI ACTION:",
                     json.dumps(
                         action,
-                        indent=2
+                        indent=2,
+                        default=str
                     )
                 )
 
@@ -294,7 +254,7 @@ def process_ai():
                     tool_call["id"],
 
                 "content":
-                    json.dumps(result)
+                    json.dumps(result,default=str)
             })
 
 
