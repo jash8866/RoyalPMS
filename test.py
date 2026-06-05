@@ -36,8 +36,10 @@ Rules:
 # =====================================================
 db = DatabaseConnection(host="localhost", username="root", password="", db_name="royalpms_cryst8000")
 db.connect()
-print("Database schema:", json.dumps(db.get_database_schema(), indent=2))
-
+reservations = db.fetch_reservations()
+print("Reservations loaded from DB:")
+for res in reservations:
+    print(res)
 
 
 # =====================================================
