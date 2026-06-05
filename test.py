@@ -87,11 +87,19 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_database_schema",
-            "description": "Retrieve the schema of the database",
+            "name": "display_table_data",
+            "description": "Display data from any table in the database. The AI should specify the table name and any filters if needed in the arguments.",
             "parameters": {
                 "type": "object",
-                "properties": {}
+                "properties": {
+                    "table_name": {
+                        "type": "string"
+                    },
+                    "filters": {
+                        "type": "object",
+                        "description": "Key-value pairs for filtering the data, where the key is the column name and the value is the filter value."
+                    }
+                }
             }
         }
     }
@@ -128,11 +136,31 @@ def search_reservations(guest_name):
                 }
             ]
         }
+    
 
+def display_table_data(table_name, filters=None):
+    db.connect()
+    data = db.fetch_table_data(table_name, filters)
+    print(f"Data from {table_name} with filters {filters}:")
+    for row in data:
+        print(row)
+        
+    return {
+        "success": True,
+        "data": data,
+
+        "ui_actions": [
+            {
+                "type": "display_table",
+                "table_name": table_name,
+                "data": data
+            }
+        ]   
+    }
 
 available_tools = {
     "search_reservations": search_reservations,
-    "get_database_schema": get_database_schema
+    "display_table_data": display_table_data
 }
 
 

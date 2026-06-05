@@ -37,12 +37,18 @@ class DatabaseConnection:
 
         return schema
 
-    def fetch_reservations(self):
+    def fetch_table_data(self, table_name, filters=None):
+        if not self.connection:
+            raise RuntimeError("Database connection is not established")
+
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM reservations")
-        return cursor.fetchall()
-    
-    def fetch_guests(self):
-        cursor = self.connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM guests")
+        query = f"SELECT * FROM {table_name}"
+        
+        if filters:
+            filter_clauses = [f"{col} = %s" for col in filters.keys()]
+            query += " WHERE " + " AND ".join(filter_clauses)
+            cursor.execute(query, tuple(filters.values()))
+        else:
+            cursor.execute(query)
+
         return cursor.fetchall()
