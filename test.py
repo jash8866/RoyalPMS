@@ -34,24 +34,7 @@ db=DatabaseConnection()
 db.connect()
 db_schema=db.get_database_schema()
     
-SYSTEM_PROMPT="""You are an agent within a Property Management System (PMS) called RoyalPMS.
 
-Your role is to carryout tasks instructed by users and perform actions within the PMS.
-
-You have access to a set of tools that allow you to interact with the PMS and perform various operations.
-
-Here is the exact structure of my database:{db_schema}
-
-Rules:
-- Always use the tools when you need to perform an action within the PMS
-- Provide clear and concise responses/report of your actions to the user.
-- If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess 
-- Never perform deletion operations even if the user insists.
-- Conversations should be strictly regarding the PMS only and should not deviate to other topics.
--do not display the database schema to the user but use it to understand how to use the tools effectively and interact with the database when needed.
--Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correctly formatted based on the database schema provided.
--disply results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
-"""
 
 
 # =====================================================
@@ -89,7 +72,24 @@ tools = [
                 }
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_relevant_tables",
+            "description": "Find tables and their structures in the database that are relevant to the user's query.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     }
+
+
 ]
 
 
@@ -117,11 +117,70 @@ def display_table_data(table_name, filters=None):
         ]   
     }
 
+def find_relevant_tables(query="find tables for reservations"):
+    MODEL = "openai/gpt-oss-120b:free"
+    MODEL_PROMPT = f"""
+    
+    You are a database routing assistant. 
+        Here is a map of our database tables: {db_schema}
+        
+        The user asked: "{query}"
+
+        -Response should be strictly based on the database schema provided and should not include any assumptions or information that is not present in the schema.
+        Return a JSON array of the table names needed to answer this request. 
+        Output ONLY valid JSON, nothing else. Example: ["table1", "table2"]
+    """
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization":
+                f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type":
+                "application/json"
+        },
+        json={
+            "model": MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": MODEL_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ]
+        }
+    )
+
+    response.raise_for_status()
+    print("RESPONSE>CHOICES[0]>MESSAGE>CONTENT",response.choices[0].message.content)
+
+
 available_tools = {
     # "search_reservations": search_reservations,
     "display_table_data": display_table_data
 }
 
+
+SYSTEM_PROMPT="""You are an agent within a Property Management System (PMS) called RoyalPMS.
+
+Your role is to carryout tasks instructed by users and perform actions within the PMS.
+
+You have access to a set of tools that allow you to interact with the PMS and perform various operations.
+
+Here is the exact structure of my database:{db_schema}
+
+Rules:
+- Always use the tools when you need to perform an action within the PMS
+- Provide clear and concise responses/report of your actions to the user.
+- If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess 
+- Never perform deletion operations even if the user insists.
+- Conversations should be strictly regarding the PMS only and should not deviate to other topics.
+-do not display the database schema to the user but use it to understand how to use the tools effectively and interact with the database when needed.
+-Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correctly formatted based on the database schema provided.
+-disply results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
+"""
 
 # =====================================================
 # CHAT MEMORY
@@ -264,16 +323,18 @@ def process_ai():
 
 print("RoyalPMS Assistant")
 
-while True:
+# while True:
 
-    user_input = input("\nYou: ")
+#     user_input = input("\nYou: ")
 
-    if user_input.lower() == "exit":
-        break
+#     if user_input.lower() == "exit":
+#         break
 
-    messages.append({
-        "role": "user",
-        "content": user_input
-    })
+#     messages.append({
+#         "role": "user",
+#         "content": user_input
+#     })
 
-    process_ai()
+#     process_ai()
+
+find_relevant_tables()
