@@ -154,7 +154,7 @@ def find_relevant_tables(query="find tables for reservations"):
     )
 
     response.raise_for_status()
-    print("RESPONSE>CHOICES[0]>MESSAGE>CONTENT",response.choices[0].message.content)
+    print("RESPONSE>CHOICES",response.choices)
 
 
 available_tools = {
