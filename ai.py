@@ -1,59 +1,196 @@
 import os
-from dotenv import load_dotenv
+import json
 import requests
+from dbcon import *
+from tools import *
 
-load_dotenv()
+#==================DB=========================
+db=DatabaseConnection()
+db.connect()
+db_schema=db.get_database_schema()
 
+
+#========================CONFIG====================
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API_KEY:
+if not OPENROUTER_API_KEY:    #raise an error if the API key is not set in the environment
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
-
-class AIServiceError(Exception):
-    pass
+MODEL = "openai/gpt-oss-120b:free"
 
 
-def post_openrouter(payload: dict) -> dict:
-    try:
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json",
-            },
-            json=payload,
-            timeout=30,
-        )
-    except requests.RequestException as exc:
-        raise AIServiceError(f"OpenRouter request failed: {exc}") from exc
+# ==================EXTRA SYSTEM PROMPT FOR AI===========================
+_SYSTEM_PROMPT = """
+You are an agent within a Property Management System (PMS)
+called RoyalPMS.
 
-    if response.status_code != 200:
-        raise AIServiceError(
-            f"OpenRouter returned status {response.status_code}: {response.text}"
-        )
+Your role is to carry out tasks instructed by users and
+perform actions within the PMS.
 
-    try:
-        return response.json()
-    except ValueError as exc:
-        raise AIServiceError(f"OpenRouter returned invalid JSON: {exc}") from exc
+Rules:
+- Always use tools when PMS data is required.
+- Never invent PMS data.
+- Ask for clarification when needed.
+- Never perform deletion operations.
+- Report actions performed.
+- Conversations should be strictly regarding the PMS only and should not deviate to other topics.
+    """
 
 
-def talk(usr_msg):
-    SYSTEM_PROMPT="You are an agent within a Property Management System (PMS) called RoyalPMS. Your role is to carryout tasks instructed by users and perform actions within the PMS. You have access to a set of tools that allow you to interact with the PMS and perform various operations. Always use the tools when you need to perform an action within the PMS, and provide clear and concise responses/report of your actions to the user. If you are unsure about how to use a tool or need more information, ask the user for clarification don't guess and never perform deletion operations even if the user insists." 
+SYSTEM_PROMPT="""
+You are an agent within a Property Management System (PMS) called RoyalPMS.
 
-    payload = {
-        "model": "openai/gpt-oss-120b:free",  # Change this to your preferred model
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": usr_msg}
-        ],
-        "reasoning": {"enabled": True},
+Your role is to carryout tasks instructed by users and perform actions within the PMS.
+
+You have access to a set of tools that allow you to interact with the PMS and perform various operations.
+
+
+Rules:
+- Always use the tools when you need to perform an action within the PMS
+- Provide clear and concise responses/report of your actions to the user.
+- If you are unsure about a query, ask the user for clarification don't guess 
+- Never perform deletion operations even if the user insists.
+- Conversations should be strictly regarding the PMS only and should not deviate to other topics.
+- Do not display the database schema to the user but use it to understand how to use the tools effectively and interact with the database when needed.
+- Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correct based on their descriptions.
+- Display results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
+"""
+#====================================================
+
+
+# ================CHAT MEMORY OF MAIN CHATBOT======================
+
+
+main_memory = [
+    {
+        "role": "system",
+        "content": SYSTEM_PROMPT
+    }
+]
+
+available_main_tools = {
+    "display_table_data": display_table_data,
+    "find_relevant_tables": find_relevant_tables
+}
+
+main_tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "display_table_data",
+            "description": "Display data from any table in the database. The AI should specify the table name and any filters if needed in the arguments.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "table_name": {
+                        "type": "string"
+                    },
+                    "filters": {
+                        "type": "object",
+                        "description": "Key-value pairs for filtering the data, where the key is the column name and the value is the filter value."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_relevant_tables",
+            "description": "This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     }
 
-    # Make the single API call
-    response = post_openrouter(payload)
-    
-    # Extract the message from the response
-    assistant_message = response.get("choices", [{}])[0].get("message", {})
-    
-    # Return just the text content
-    return assistant_message.get("content", "")
+
+]
+
+
+
+
+
+# ===================CHATBOT LOOP==================================
+
+def chatbot():
+    while True:
+        response = call_model(main_memory, main_tools)
+        assistant_message = response["choices"][0]["message"] 
+
+        main_memory.append({
+            "role": "assistant",
+            "content": assistant_message.get("content"),
+            "tool_calls": assistant_message.get("tool_calls"),
+            "reasoning_details": assistant_message.get( "reasoning_details" )
+        })
+
+        tool_calls = assistant_message.get( "tool_calls" )
+
+        if not tool_calls:
+            print( "\nAssistant:", assistant_message.get("content") )
+            return
+
+        for tool_call in tool_calls:
+            tool_name = (tool_call["function"]["name"]) #get tool name
+            args = json.loads( tool_call["function"]["arguments"] )   #
+
+            print( f"\nExecuting Tool: {tool_name}" )
+
+            result = available_main_tools[tool_name](**args)  
+
+            # ------------------------------------------------
+            # THIS IS WHERE UI EVENTS WOULD BE EMITTED
+            # ------------------------------------------------
+
+            # ui_actions = result.get(
+            #     "ui_actions",
+            #     []
+            # )
+
+            # for action in ui_actions:
+
+            #     print( "\nUI ACTION:", 
+            #               json.dumps(
+            #                   action,
+            #                   indent=2,
+            #                   default=str
+            #                )
+            #           )
+
+            # ------------------------------------------------
+
+            main_memory.append({
+                "role": "tool",
+
+                "tool_call_id":
+                    tool_call["id"],
+
+                "content":
+                    json.dumps(result,default=str)
+            })
+
+
+
+# =====================================================
+# MAIN LOOP
+# =====================================================
+
+print("RoyalPMS Assistant")
+
+while True:
+
+    user_input = input("\nYou: ")
+
+    if user_input.lower() == "exit":
+        break
+
+    main_memory.append({
+        "role": "user",
+        "content": user_input
+    })
+
+    chatbot()

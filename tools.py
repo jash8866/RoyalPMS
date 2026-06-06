@@ -1,0 +1,99 @@
+import requests
+from dbcon import *
+from ai import  OPENROUTER_API_KEY, MODEL 
+
+# ========================TOOL IMPLEMENTATIONS=============================
+
+   
+# ===============STANDALONE OPENROUTER CALL=======================
+
+def call_model(messages, tools):
+
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization":
+                f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type":
+                "application/json"
+        },
+        json={
+            "model": MODEL,
+            "messages": messages,
+            "tools": tools,
+            "reasoning": {
+                "enabled": True
+            }
+        }
+    )
+
+    response.raise_for_status()
+    return response.json()
+
+
+def display_table_data(table_name, filters=None):
+    db=DatabaseConnection()
+    db.connect()
+    data = db.fetch_table_data(table_name, filters)
+    print(f"Data from {table_name} with filters {filters}:")
+    for row in data:
+        print(row)
+        
+    return {
+        "success": True,
+        "data": data,
+
+        "ui_actions": [
+            {
+                "type": "display_table",
+                "table_name": table_name,
+                "data": data
+            }
+        ]   
+    }
+
+def find_relevant_tables(query="Just respond query not received from main chatbot"):
+    MODEL = "openai/gpt-oss-120b:free"
+    db=DatabaseConnection()
+    db.connect()
+    db_schema = db.get_database_schema()
+    MODEL_PROMPT = f"""
+    You are a database routing assistant. 
+        Here is a map of our database tables: {db_schema}
+        
+        The user asked: "{query}"
+
+        -Response should be strictly based on the database schema provided and should not include any assumptions or information that is not present in the schema.
+        Return a JSON array of the table names needed to answer this request. 
+        Output ONLY valid JSON, nothing else. Example: ["table1", "table2"]
+    """
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization":
+                f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type":
+                "application/json"
+        },
+        json={
+            "model": MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": MODEL_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ]
+        }
+    )
+
+    response.raise_for_status()
+    print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
+
+
+
+
+

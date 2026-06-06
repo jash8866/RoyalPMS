@@ -3,9 +3,9 @@ from mysql.connector import Error
 
 class DatabaseConnection:
     def __init__(self):
-        self.host = "localhost"
-        self.username = "root"
-        self.password = ""
+        self.host = "26.32.243.4"
+        self.username = "jash"
+        self.password = "pass"
         self.db_name = "royalpms_cryst8000"
         self.connection = None
 
@@ -15,7 +15,8 @@ class DatabaseConnection:
                 host=self.host,
                 user=self.username,
                 passwd=self.password,
-                database=self.db_name
+                database=self.db_name,
+                port=3306
             )
             print("Connection to MySQL DB successful")
         except Error as e:
