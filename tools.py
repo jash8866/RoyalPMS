@@ -1,6 +1,6 @@
 import requests
 from dbcon import *
-from ai import  OPENROUTER_API_KEY, MODEL 
+from ai import  OPENROUTER_API_KEY, NVIDIA_API_KEY ,MODEL 
 
 # ========================TOOL IMPLEMENTATIONS=============================
 
@@ -29,6 +29,28 @@ def call_model(messages, tools):
 
     response.raise_for_status()
     return response.json()
+
+def call_nemotron(messages, tools):
+    from openai import OpenAI
+
+    client = OpenAI(
+    base_url = "https://integrate.api.nvidia.com/v1",
+    api_key = NVIDIA_API_KEY
+    )
+
+
+    response = client.chat.completions.create(
+        model="nvidia/nemotron-3-ultra-550b-a55b",
+        messages=messages,
+        tools=tools,
+        tool_choice="auto",
+        temperature=1,
+        top_p=0.95,
+        max_tokens=16384,
+        extra_body={"chat_template_kwargs":{"enable_thinking":True},"reasoning_budget":16384},
+    )
+
+    return response.model_dump()
 
 
 def display_table_data(table_name, filters=None):

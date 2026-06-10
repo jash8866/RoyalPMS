@@ -11,6 +11,9 @@ db_schema=db.get_database_schema()
 
 
 #========================CONFIG====================
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEE")
+if not NVIDIA_API_KEY:    #raise an error if the API key is not set in the environment
+    raise RuntimeError("NVIDIA_API_KEE is not set in the environment")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:    #raise an error if the API key is not set in the environment
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
@@ -118,7 +121,8 @@ main_tools = [
 
 def chatbot():
     while True:
-        response = call_model(main_memory, main_tools)
+        # response = call_model(main_memory, main_tools)
+        response = call_nemotron(main_memory, main_tools)
         assistant_message = response["choices"][0]["message"] 
 
         main_memory.append({

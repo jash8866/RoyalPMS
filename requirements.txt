@@ -9,5 +9,6 @@ uvicorn[standard] >= 0.28.0
 # AI and Database Connectivity
 openai >= 1.14.0
 mysql-connector-python >= 8.3.0
+openai >= 1.14.0
 requests
 pydantic
