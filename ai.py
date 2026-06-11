@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from dbcon import *
-from tools import *
+from aitools import *
 
 #==================DB=========================
 db=DatabaseConnection()
@@ -98,7 +98,7 @@ main_tools = [
         "type": "function",
         "function": {
             "name": "find_relevant_tables",
-            "description": "This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.",
+            "description": "This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.once you get the relevant tables from this tool, call the display_table_data tool to display data from those tables.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -121,8 +121,8 @@ main_tools = [
 
 def chatbot():
     while True:
-        # response = call_model(main_memory, main_tools)
-        response = call_nemotron(main_memory, main_tools)
+        response = call_model(main_memory, main_tools)
+        # response = call_nemotron(main_memory, main_tools)
         assistant_message = response["choices"][0]["message"] 
 
         main_memory.append({

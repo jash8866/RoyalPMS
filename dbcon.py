@@ -3,9 +3,9 @@ from mysql.connector import Error
 
 class DatabaseConnection:
     def __init__(self):
-        self.host = "26.32.243.4"
-        self.username = "jash"
-        self.password = "pass"
+        self.host = "localhost"
+        self.username = "root"
+        self.password = ""
         self.db_name = "royalpms_cryst8000"
         self.connection = None
 
@@ -16,7 +16,7 @@ class DatabaseConnection:
                 user=self.username,
                 passwd=self.password,
                 database=self.db_name,
-                port=3306
+                # port=3306
             )
             print("Connection to MySQL DB successful")
         except Error as e:
@@ -37,6 +37,15 @@ class DatabaseConnection:
             schema[table_name] = [{"name": col[0], "type": col[1]} for col in columns]
 
         return schema
+    
+    def get_table_columns(self, table_name):
+        if not self.connection:
+            raise RuntimeError("Database connection is not established")
+
+        cursor = self.connection.cursor()
+        cursor.execute(f"DESCRIBE {table_name}")
+        columns = cursor.fetchall()
+        return [{"name": col[0], "type": col[1]} for col in columns]
 
     def fetch_table_data(self, table_name, filters=None):
         if not self.connection:

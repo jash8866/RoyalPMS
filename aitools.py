@@ -1,7 +1,14 @@
 import requests
 from dbcon import *
-from ai import  OPENROUTER_API_KEY, NVIDIA_API_KEY ,MODEL 
+import os 
 
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEE")
+if not NVIDIA_API_KEY:    #raise an error if the API key is not set in the environment
+    raise RuntimeError("NVIDIA_API_KEE is not set in the environment")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:    #raise an error if the API key is not set in the environment
+    raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
+MODEL = "openai/gpt-oss-120b:free"
 # ========================TOOL IMPLEMENTATIONS=============================
 
    
@@ -86,8 +93,9 @@ def find_relevant_tables(query="Just respond query not received from main chatbo
         The user asked: "{query}"
 
         -Response should be strictly based on the database schema provided and should not include any assumptions or information that is not present in the schema.
-        Return a JSON array of the table names needed to answer this request. 
-        Output ONLY valid JSON, nothing else. Example: ["table1", "table2"]
+        Return a JSON array of the table names and their columns needed to answer this request. 
+        Output ONLY valid JSON, nothing else. Example: ["table1":[column1, column2], "table2":[column1]]
+        -Don't include your reasoning or any explanations, just the JSON output with relevant tables and columns.
     """
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -113,7 +121,8 @@ def find_relevant_tables(query="Just respond query not received from main chatbo
     )
 
     response.raise_for_status()
-    print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
+    # print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
+    return response.json()["choices"][0]["message"]
 
 
 
