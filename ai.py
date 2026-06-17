@@ -71,7 +71,8 @@ main_memory = [
 
 available_main_tools = {
     "display_table_data": display_table_data,
-    "find_relevant_tables": find_relevant_tables
+    "find_relevant_tables": find_relevant_tables,
+    "insert_into_table": insert_into_table
 }
 
 main_tools = [
