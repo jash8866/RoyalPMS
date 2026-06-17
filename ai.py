@@ -109,6 +109,34 @@ main_tools = [
             }
         }
     }
+    {
+        "type": "function",
+        "function": {
+            "name": "insert_into_table",
+            "description": "This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "table_name": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    }
+
+
+]
+
+
+                    }
+                }
+            }
+        }
+    }
 
 
 ]

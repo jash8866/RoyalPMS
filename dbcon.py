@@ -65,3 +65,17 @@ class DatabaseConnection:
             cursor.execute(query)
 
         return cursor.fetchall()
+    
+    def insert_into_table(self,table_name,data):
+        if not self.connection:
+            raise RuntimeError("Database connection is not established")
+        cursor = self.connection.cursor()
+        columns = ", ".join(data.keys())
+        placeholders = ", ".join(["%s"] * len(data))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        print("Executing query:", query)
+        cursor.execute(query, tuple(data.values()))
+        self.connection.commit()
+        print(f"Data inserted into {table_name} successfully.")
+        return cursor.lastrowid
+        

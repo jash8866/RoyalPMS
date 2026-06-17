@@ -72,13 +72,13 @@ def display_table_data(table_name, filters=None):
         "success": True,
         "data": data,
 
-        "ui_actions": [
-            {
-                "type": "display_table",
-                "table_name": table_name,
-                "data": data
-            }
-        ]   
+        # "ui_actions": [
+        #     {
+        #         "type": "display_table",
+        #         "table_name": table_name,
+        #         "data": data
+        #     }
+        # ]   
     }
 
 def find_relevant_tables(query="Just respond query not received from main chatbot"):
@@ -124,7 +124,11 @@ def find_relevant_tables(query="Just respond query not received from main chatbo
     # print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
     return response.json()["choices"][0]["message"]
 
-
-
-
-
+def insert_into_table(table_name, data):
+    db=DatabaseConnection()
+    db.connect()
+    db.insert_into_table(table_name, data)
+    return {
+        "success": True,
+        "message": f"Data inserted into {table_name} successfully."
+    }
