@@ -108,7 +108,7 @@ main_tools = [
                 }
             }
         }
-    }
+    },
     {
         "type": "function",
         "function": {
@@ -128,18 +128,10 @@ main_tools = [
         }
     }
 
-
 ]
 
 
-                    }
-                }
-            }
-        }
-    }
 
-
-]
 
 
 
