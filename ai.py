@@ -55,6 +55,9 @@ Rules:
 - Do not display the database schema to the user but use it to understand how to use the tools effectively and interact with the database when needed.
 - Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correct based on their descriptions.
 - Display results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
+- Before insert check the table schema and ensure that the data being inserted is valid and complete don't leave any columns null that are not allowed to be null in the schema. If there are any discrepancies or issues with the data, report them to the user and do not perform the insert operation.
+- if a user asks for reserving/booking a room, always calculate the total cost of the booking based on the room type, number of nights, and any additional services requested. Provide a detailed breakdown of the cost to the user before proceeding with the booking.no
+
 """
 #====================================================
 

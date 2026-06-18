@@ -81,48 +81,102 @@ def display_table_data(table_name, filters=None):
         # ]   
     }
 
+# def find_relevant_tables(query="Just respond query not received from main chatbot"):
+#     MODEL = "openai/gpt-oss-120b:free"
+#     db=DatabaseConnection()
+#     db.connect()
+#     db_schema = db.get_database_schema()
+#     MODEL_PROMPT = f"""
+#     You are a database routing assistant. 
+#         Here is a map of our database tables: {db_schema}
+        
+#         The user asked: "{query}"
+
+#         -Response should be strictly based on the database schema provided and should not include any assumptions or information that is not present in the schema.
+#         Return a JSON array of the table names and their columns needed to answer this request. 
+#         Output ONLY valid JSON, nothing else. Example: ["table1":[column1, column2], "table2":[column1]]
+#         -Don't include your reasoning or any explanations, just the JSON output with relevant tables and columns.
+#     """
+#     response = requests.post(
+#         "https://openrouter.ai/api/v1/chat/completions",
+#         headers={
+#             "Authorization":
+#                 f"Bearer {OPENROUTER_API_KEY}",
+#             "Content-Type":
+#                 "application/json"
+#         },
+#         json={
+#             "model": MODEL,
+#             "messages": [
+#                 {
+#                     "role": "system",
+#                     "content": MODEL_PROMPT
+#                 },
+#                 {
+#                     "role": "user",
+#                     "content": query
+#                 }
+#             ]
+#         }
+#     )
+
+#     response.raise_for_status()
+#     # print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
+#     return response.json()["choices"][0]["message"]
+
 def find_relevant_tables(query="Just respond query not received from main chatbot"):
-    MODEL = "openai/gpt-oss-120b:free"
-    db=DatabaseConnection()
+    # Using the blazing-fast 8B model specifically for this routing task
+    FAST_ROUTER_MODEL = "openrouter/free"
+    
+    db = DatabaseConnection()
     db.connect()
     db_schema = db.get_database_schema()
+    
+    # Stricter prompt engineered specifically for smaller models to prevent hallucinations
     MODEL_PROMPT = f"""
     You are a database routing assistant. 
-        Here is a map of our database tables: {db_schema}
-        
-        The user asked: "{query}"
+    Here is a map of our database tables: {db_schema}
+    
+    The user asked: "{query}"
 
-        -Response should be strictly based on the database schema provided and should not include any assumptions or information that is not present in the schema.
-        Return a JSON array of the table names and their columns needed to answer this request. 
-        Output ONLY valid JSON, nothing else. Example: ["table1":[column1, column2], "table2":[column1]]
-        -Don't include your reasoning or any explanations, just the JSON output with relevant tables and columns.
+    CRITICAL INSTRUCTIONS:
+    - Output ONLY a valid JSON object mapping table names to arrays of their column names.
+    - Example format: {{"table_name": ["col1", "col2"]}}
+    - Do NOT output any conversational text, greetings, explanations, or markdown code blocks (like ```json). 
+    - Output JUST the raw JSON starting with {{ and ending with }}.
+    - Only include tables strictly relevant to the user's query.
     """
+    
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization":
-                f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type":
-                "application/json"
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
         },
         json={
-            "model": MODEL,
+            "model": FAST_ROUTER_MODEL,
             "messages": [
                 {
                     "role": "system",
                     "content": MODEL_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": query
                 }
-            ]
+            ],
+            # Explicitly disable reasoning for this call to maximize speed
+            "reasoning": {
+                "enabled": False 
+            }
         }
     )
 
     response.raise_for_status()
-    # print("RESPONSE>CHOICES",response.json()["choices"][0]["message"])
-    return response.json()["choices"][0]["message"]
+    
+    # Extract the message content
+    result_message = response.json()["choices"][0]["message"]
+    
+    # Optional debugging: print the raw output to ensure the model isn't adding weird formatting
+    print(f"\n[ROUTER DEBUG] Raw model output: {result_message['content']}")
+    
+    return result_message
 
 def insert_into_table(table_name, data):
     db=DatabaseConnection()
