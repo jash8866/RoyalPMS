@@ -17,7 +17,10 @@ if not NVIDIA_API_KEY:    #raise an error if the API key is not set in the envir
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:    #raise an error if the API key is not set in the environment
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
-MODEL = "openai/gpt-oss-120b:free"
+# MODEL = "openai/gpt-oss-120b:free"
+# MODEL = "nvidia/nemotron-3-ultra-550b-a55b"
+# MODEL = "GLM 5.2"
+MODEL = "openai/gpt-oss-20b:free"
 
 
 # ==================EXTRA SYSTEM PROMPT FOR AI===========================
