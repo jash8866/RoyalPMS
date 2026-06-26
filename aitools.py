@@ -181,8 +181,5 @@ def find_relevant_tables(query="Just respond query not received from main chatbo
 def insert_into_table(table_name, data):
     db=DatabaseConnection()
     db.connect()
-    db.insert_into_table(table_name, data)
-    return {
-        "success": True,
-        "message": f"Data inserted into {table_name} successfully."
-    }
+    res=db.insert_into_table(table_name, data)
+    return res
