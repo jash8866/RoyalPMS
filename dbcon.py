@@ -80,7 +80,7 @@ class DatabaseConnection:
             print(f"The error '{e}' occurred")
             return {error: str(e)}
     
-    def insert_into_table(self,table_name,data):
+    def insert_into_table(self,table_name,data:dict):
         try:
             if not self.connection:
                 raise RuntimeError("Database connection is not established")
@@ -96,4 +96,4 @@ class DatabaseConnection:
         except Error as e:  
             print(f"The error '{e}' occurred")
             return {error: str(e)}
-        
+        ``
