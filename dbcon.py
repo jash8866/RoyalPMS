@@ -1,15 +1,19 @@
 from curses import error
+import os
 
+from dotenv import load_dotenv
 import mysql.connector
 from mysql.connector import Error
 
+load_dotenv()
+
 class DatabaseConnection:
     def __init__(self):
-        self.host = "localhost"
-        self.username = "root"
-        self.password = ""
+        self.host = "royalpms-yugdalal97-dd0s.l.aivencloud.com"
+        self.username = "avnadmin"
+        self.password = os.getenv("DB_PASSWORD")
         self.db_name = "royalpms_cryst8000"
-        self.connection = None
+        self.port = 22285
 
     def connect(self):
         try:
@@ -18,7 +22,7 @@ class DatabaseConnection:
                 user=self.username,
                 passwd=self.password,
                 database=self.db_name,
-                # port=3306
+                port=22285
             )
             print("Connection to MySQL DB successful")
         except Error as e:

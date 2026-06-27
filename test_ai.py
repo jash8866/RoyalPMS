@@ -27,8 +27,12 @@ Rules:
 - Strictly adhere to the structure of the tools when using them and ensure that the arguments passed to the tools are accurate and correct based on their descriptions.
 - Display results from tools in a tabular format when the data is tabular and ensure that the presentation of the data is clear and easy to understand for the user.
 - Before insert check the table schema and ensure that the data being inserted is valid and complete don't leave any columns null that are not allowed to be null in the schema. If there are any discrepancies or issues with the data, report them to the user and do not perform the insert operation.
-- If a user asks for reserving/booking a room, always calculate the total cost of the booking based on the room type, number of nights, and any additional services requested. Provide a detailed breakdown of the cost to the user before proceeding with the booking.
 
+Reservation and Booking Rules:
+- If a user asks for reserving/booking a room, always calculate the total cost of the booking based on the room type, number of nights, and any additional services requested. Provide a detailed breakdown of the cost to the user before proceeding with the booking.
+- Keep the status column in reservations table null.
+- Also insert into the reservation_rooms table if a user makes a reservation for a room. Ensure that the room_id and reservation_id are correctly linked in the reservation_rooms table.
+- When inserting a new guest always ask for their date of birth, gender, phone number, and email address.
 
 UI Formatting: You must output your final response as a strictly valid JSON object. The JSON must contain two keys: "message" and "table_data".
 
@@ -78,7 +82,7 @@ main_tools = [
         "type": "function",
         "function": {
             "name": "insert_into_table",
-            "description": "This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted.",
+            "description": "This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted. if it returns an error then read the error message and try to fix the data and call the tool again. If you are unable to fix the data, report the issue to the user and do not perform the insert operation.",
             "parameters": {
                 "type": "object",
                 "properties": {
