@@ -100,4 +100,4 @@ class DatabaseConnection:
         except Error as e:  
             print(f"The error '{e}' occurred")
             return {error: str(e)}
-        ``
+        
