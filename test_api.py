@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, List
 from test_ai import get_ai_response, SYSTEM_PROMPT
-
+#EH
 app = FastAPI(title="RoyalPMS AI API")
 
 # Dictionary to hold chat memory for different users
