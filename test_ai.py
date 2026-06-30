@@ -10,7 +10,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
 
-MODEL = "openai/gpt-oss-20b:free"
+MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
 SYSTEM_PROMPT = """
 You are an agent within a Property Management System (PMS) called RoyalPMS.

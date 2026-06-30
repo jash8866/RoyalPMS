@@ -1,11 +1,11 @@
-from curses import error
 import os
 
 from dotenv import load_dotenv
 import mysql.connector
 from mysql.connector import Error
 
-load_dotenv()
+load_dotenv(override=True)
+print("Loaded key:", repr(os.getenv("OPENROUTER_API_KEY")))
 
 class DatabaseConnection:
     def __init__(self):
