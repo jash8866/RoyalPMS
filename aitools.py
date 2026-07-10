@@ -9,6 +9,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_API_KEY:    #raise an error if the API key is not set in the environment
     raise RuntimeError("OPENROUTER_API_KEY is not set in the environment")
 MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+
 # ========================TOOL IMPLEMENTATIONS=============================
 
    

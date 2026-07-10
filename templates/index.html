@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoyalPMS AI</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-sidebar: #202123;
+            --text-main: #343541;
+            --text-sidebar: #ececf1;
+            --msg-user: #ffffff;
+            --msg-ai: #f7f7f8;
+            --border-color: #e5e5e5;
+            --btn-primary: #10a37f;
+            --btn-hover: #1a7f64;
+        }
+
+        body {
+            font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+
+        /* Sidebar (Left) */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-sidebar);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .new-chat-btn {
+            background-color: transparent;
+            border: 1px solid #4d4d4f;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .new-chat-btn:hover { background-color: #2a2b32; }
+
+        .chat-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .chat-list::-webkit-scrollbar-thumb {
+            background: #4d4d4f; 
+            border-radius: 10px;
+        }
+        .chat-list a:hover {
+            background-color: #2a2b32 !important;
+        }
+
+        .sidebar-bottom { margin-top: auto; border-top: 1px solid #4d4d4f; padding-top: 10px;}
+        
+        .clear-form { margin: 0; width: 100%; }
+        .btn-clear {
+            width: 100%;
+            background-color: transparent;
+            color: #ececf1;
+            border: none;
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .btn-clear:hover { background-color: #2a2b32; }
+
+        /* Main Chat Area (Right) */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 120px; /* Space for input */
+        }
+
+        .message-row {
+            padding: 24px 20px;
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .message-row.ai { background-color: var(--msg-ai); }
+        .message-row.user { background-color: var(--msg-user); }
+
+        .message-content {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            gap: 20px;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .avatar.user { background-color: #5436da; }
+        .avatar.ai { background-color: var(--btn-primary); }
+
+        /* Input Area */
+        .input-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 30%);
+            padding: 30px 20px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-form {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-form input[type="text"] {
+            width: 100%;
+            padding: 16px 50px 16px 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-form button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--btn-primary);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .input-form button:hover { background-color: var(--btn-hover); }
+
+        /* Flashes */
+        .flash-messages {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+        .flash {
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        /* ... existing :root block ... */
+
+        /* Dark Theme overrides */
+        [data-theme="dark"] {
+            --bg-main: #343541;
+            --bg-sidebar: #202123; /* Sidebar stays dark */
+            --text-main: #ececf1;
+            --text-sidebar: #ececf1;
+            --msg-user: #343541;
+            --msg-ai: #444654;
+            --border-color: #565869;
+        }
+        
+        /* Ensure input area matches dark mode */
+        [data-theme="dark"] .input-wrapper {
+            background: linear-gradient(180deg, rgba(52,53,65,0) 0%, rgba(52,53,65,1) 30%);
+        }
+        [data-theme="dark"] .input-form {
+            background-color: #40414f;
+            color: white;
+            border-color: rgba(255,255,255,0.1);
+        }
+        [data-theme="dark"] .input-form input[type="text"] {
+            color: white;
+            background-color: transparent;
+        }
+        .flash.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;}
+        .flash.success { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399;}
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- New Chat Form -->
+        <form action="{{ url_for('new_chat') }}" method="POST" style="margin: 0; width: 100%;">
+            <button type="submit" class="new-chat-btn" style="width: 100%;">
+                <span>+</span> New chat
+            </button>
+        </form>
+        
+        <!-- Chat History List -->
+        <div class="chat-list" style="flex: 1; overflow-y: auto; margin-top: 10px; display: flex; flex-direction: column; gap: 5px;">
+            {% for chat in all_chats %}
+            <a href="{{ url_for('load_chat', session_id=chat.id) }}" 
+               style="color: var(--text-sidebar); text-decoration: none; padding: 10px; border-radius: 6px; 
+                      background-color: {% if chat.id == current_session_id %}#2a2b32{% else %}transparent{% endif %};
+                      display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;">
+                💬 {{ chat.title }}
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Clear Current Conversation -->
+        <!-- Clear Current Conversation & Theme Toggle -->
+        <div class="sidebar-bottom">
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="btn-clear" style="margin-bottom: 5px;">
+                🌙 Dark Mode
+            </button>
+            
+            <!-- Existing Clear Form -->
+            <form class="clear-form" action="{{ url_for('clear_session') }}" method="POST">
+                <button type="submit" class="btn-clear">🗑️ Clear Current Chat</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Chat History -->
+        <div class="chat-container" id="chat-box">
+            {% if not chat_history %}
+                <div class="message-row ai">
+                    <div class="message-content">
+                        <div class="avatar ai">AI</div>
+                        <div class="text">Hello! I am the RoyalPMS AI. How can I help you today?</div>
+                    </div>
+                </div>
+            {% else %}
+                {% for msg in chat_history %}
+                    <div class="message-row {{ msg.sender }}">
+                        <div class="message-content">
+                            <div class="avatar {{ msg.sender }}">
+                                {% if msg.sender == 'user' %} U {% else %} AI {% endif %}
+                            </div>
+                            <div class="text" style="width: 100%;">
+                                {{ msg.text }}
+                                
+                                <!-- Error State & Resend Button -->
+                                {% if msg.sender == 'user' and msg.status == 'error' %}
+                                    <div style="font-size: 0.8rem; color: #dc2626; margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                                        <span>Error sending message</span>
+                                        <form action="{{ url_for('send_message') }}" method="POST" style="margin: 0; display: inline-block;">
+                                            <input type="hidden" name="session_id" value="{{ current_session_id }}">
+                                            <input type="hidden" name="message" value="{{ msg.text }}">
+                                            <input type="hidden" name="is_resend" value="true">
+                                            <button type="submit" title="Resend message" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1rem; display: flex; align-items: center;">
+                                                🔄
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                                
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-wrapper">
+            <form action="{{ url_for('send_message') }}" method="POST" class="input-form">
+                <input type="hidden" name="session_id" value="{{ current_session_id }}">
+                <input type="text" name="message" placeholder="Send a message..." required autofocus autocomplete="off">
+                <button type="submit">➤</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Theme Toggling Logic ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Apply saved theme on page load
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggleBtn.innerHTML = '☀️ Light Mode';
+        }
+
+        // Toggle theme on click
+        themeToggleBtn.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            
+            if (theme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.innerHTML = '🌙 Dark Mode';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.innerHTML = '☀️ Light Mode';
+            }
+        });
+        
+        // Auto-scroll to bottom of the chat
+        const chatBox = document.getElementById('chat-box');
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Auto-hide flash messages after 1.75 seconds (1750 milliseconds)
+        setTimeout(() => {
+            const flashes = document.querySelectorAll('.flash');
+            flashes.forEach(flash => {
+                // Add a smooth fade-out transition
+                flash.style.transition = "opacity 0.5s ease";
+                flash.style.opacity = "0";
+                
+                // Remove the element from the page after it fades out
+                setTimeout(() => flash.remove(), 500);
+            });
+        }, 1750);
+    </script>
+</body>
+</html>
