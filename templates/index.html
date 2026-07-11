@@ -1,373 +1,731 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoyalPMS AI</title>
-    <style>
-        :root {
-            --bg-main: #ffffff;
-            --bg-sidebar: #202123;
-            --text-main: #343541;
-            --text-sidebar: #ececf1;
-            --msg-user: #ffffff;
-            --msg-ai: #f7f7f8;
-            --border-color: #e5e5e5;
-            --btn-primary: #10a37f;
-            --btn-hover: #1a7f64;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark light" />
+<title>RoyalPMS AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-        }
+  :root {
+    --bg-sidebar: #17181c;
+    --bg-sidebar-hover: #232429;
+    --bg-main: #26272e;
+    --bg-header: #313239;
+    --bg-input: #35363f;
+    --bg-modal: #2b2c33;
+    --accent: #10a893;
+    --accent-hover: #0d8f7d;
+    --accent-soft: rgba(16, 168, 147, 0.16);
+    --text-primary: #f3f4f6;
+    --text-secondary: #9aa0aa;
+    --text-muted: #6c7280;
+    --border: #3a3c44;
+    --avatar-user: #565a63;
+    --error: #f87171;
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    --radius: 14px;
+  }
 
-        /* Sidebar (Left) */
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            color: var(--text-sidebar);
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+  body.light {
+    --bg-sidebar: #f5f6f8;
+    --bg-sidebar-hover: #e9ebef;
+    --bg-main: #ffffff;
+    --bg-header: #f0f2f5;
+    --bg-input: #eef0f3;
+    --bg-modal: #ffffff;
+    --accent: #0c9080;
+    --accent-hover: #0a7a6c;
+    --accent-soft: rgba(12, 144, 128, 0.1);
+    --text-primary: #1a1d23;
+    --text-secondary: #5b6270;
+    --text-muted: #8b909b;
+    --border: #e3e5ea;
+    --avatar-user: #9aa0aa;
+    --error: #dc2626;
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  }
 
-        .new-chat-btn {
-            background-color: transparent;
-            border: 1px solid #4d4d4f;
-            color: white;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: left;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .new-chat-btn:hover { background-color: #2a2b32; }
+  html, body { height: 100%; }
 
-        .chat-list::-webkit-scrollbar {
-            width: 5px;
-        }
-        .chat-list::-webkit-scrollbar-thumb {
-            background: #4d4d4f; 
-            border-radius: 10px;
-        }
-        .chat-list a:hover {
-            background-color: #2a2b32 !important;
-        }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
 
-        .sidebar-bottom { margin-top: auto; border-top: 1px solid #4d4d4f; padding-top: 10px;}
-        
-        .clear-form { margin: 0; width: 100%; }
-        .btn-clear {
-            width: 100%;
-            background-color: transparent;
-            color: #ececf1;
-            border: none;
-            padding: 12px;
-            text-align: left;
-            cursor: pointer;
-            border-radius: 6px;
-        }
-        .btn-clear:hover { background-color: #2a2b32; }
+  button, input, textarea { font-family: inherit; }
 
-        /* Main Chat Area (Right) */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+  .app { display: flex; height: 100vh; width: 100%; }
 
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 120px; /* Space for input */
-        }
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 268px;
+    min-width: 268px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
 
-        .message-row {
-            padding: 24px 20px;
-            display: flex;
-            justify-content: center;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-        .message-row.ai { background-color: var(--msg-ai); }
-        .message-row.user { background-color: var(--msg-user); }
+  .new-chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
 
-        .message-content {
-            max-width: 800px;
-            width: 100%;
-            display: flex;
-            gap: 20px;
-            line-height: 1.6;
-            font-size: 1rem;
-        }
+  .new-chat-btn:hover { background: var(--bg-sidebar-hover); border-color: var(--accent); }
+  .new-chat-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-        .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        .avatar.user { background-color: #5436da; }
-        .avatar.ai { background-color: var(--btn-primary); }
+  .session-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
 
-        /* Input Area */
-        .input-wrapper {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 30%);
-            padding: 30px 20px 20px;
-            display: flex;
-            justify-content: center;
-        }
+  .session-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
 
-        .input-form {
-            max-width: 800px;
-            width: 100%;
-            position: relative;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            border-radius: 12px;
-            background-color: white;
-            border: 1px solid var(--border-color);
-        }
+  .session-item:hover { background: var(--bg-sidebar-hover); color: var(--text-primary); }
+  .session-item.active { background: var(--accent-soft); color: var(--text-primary); }
+  .session-item svg { flex-shrink: 0; opacity: 0.85; }
+  .session-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-        .input-form input[type="text"] {
-            width: 100%;
-            padding: 16px 50px 16px 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            outline: none;
-        }
+  .session-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-        .input-form button {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: var(--btn-primary);
-            color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-        .input-form button:hover { background-color: var(--btn-hover); }
+  .empty-sessions {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    padding: 12px;
+  }
 
-        /* Flashes */
-        .flash-messages {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-        }
-        .flash {
-            padding: 10px 20px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        /* ... existing :root block ... */
+  .sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
 
-        /* Dark Theme overrides */
-        [data-theme="dark"] {
-            --bg-main: #343541;
-            --bg-sidebar: #202123; /* Sidebar stays dark */
-            --text-main: #ececf1;
-            --text-sidebar: #ececf1;
-            --msg-user: #343541;
-            --msg-ai: #444654;
-            --border-color: #565869;
-        }
-        
-        /* Ensure input area matches dark mode */
-        [data-theme="dark"] .input-wrapper {
-            background: linear-gradient(180deg, rgba(52,53,65,0) 0%, rgba(52,53,65,1) 30%);
-        }
-        [data-theme="dark"] .input-form {
-            background-color: #40414f;
-            color: white;
-            border-color: rgba(255,255,255,0.1);
-        }
-        [data-theme="dark"] .input-form input[type="text"] {
-            color: white;
-            background-color: transparent;
-        }
-        .flash.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171;}
-        .flash.success { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399;}
-    </style>
+  .footer-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .footer-btn:hover { background: var(--bg-sidebar-hover); color: var(--text-primary); }
+  .footer-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .footer-btn svg { flex-shrink: 0; }
+
+  .icon-moon { display: none; }
+  body.light .icon-sun { display: none; }
+  body.light .icon-moon { display: inline-flex; }
+
+  /* ---------- Chat area ---------- */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+    min-width: 0;
+  }
+
+  .messages { flex: 1; overflow-y: auto; }
+
+  .msg-row {
+    display: flex;
+    gap: 14px;
+    padding: 20px 32px;
+    align-items: flex-start;
+  }
+
+  .msg-row.assistant { background: var(--bg-header); }
+  .msg-row.error .msg-text { color: var(--error); }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .avatar.assistant { background: var(--accent); }
+  .avatar.user { background: var(--avatar-user); }
+
+  .msg-text {
+    font-size: 15px;
+    line-height: 1.6;
+    padding-top: 4px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .typing { display: flex; gap: 4px; padding-top: 12px; }
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ---------- Input bar ---------- */
+  .input-bar { display: flex; padding: 18px 32px 24px; }
+
+  .input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px 6px 6px 18px;
+    transition: border-color 0.15s ease;
+  }
+
+  .input-wrap:focus-within { border-color: var(--accent); }
+
+  #messageInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--text-primary);
+    font-size: 14.5px;
+    line-height: 1.5;
+    max-height: 150px;
+    padding: 9px 0;
+  }
+
+  #messageInput::placeholder { color: var(--text-muted); }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 11px;
+    background: var(--accent);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  }
+
+  .send-btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .send-btn:active:not(:disabled) { transform: scale(0.94); }
+  .send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .send-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Settings modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg-modal);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    box-shadow: var(--shadow);
+  }
+
+  .modal h3 { font-size: 16px; margin-bottom: 6px; }
+
+  .modal p.hint {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+
+  .modal label {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .modal input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+  }
+
+  .modal input:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .modal-actions button {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .btn-cancel { background: transparent; color: var(--text-secondary); }
+  .btn-cancel:hover { color: var(--text-primary); }
+
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-save:hover { background: var(--accent-hover); }
+
+  /* ---------- Scrollbars ---------- */
+  .session-list::-webkit-scrollbar, .messages::-webkit-scrollbar { width: 6px; }
+  .session-list::-webkit-scrollbar-thumb, .messages::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .session-list::-webkit-scrollbar-track, .messages::-webkit-scrollbar-track { background: transparent; }
+
+  @media (max-width: 640px) {
+    .sidebar { width: 216px; min-width: 216px; padding: 12px 8px; }
+    .msg-row { padding: 16px 18px; }
+    .input-bar { padding: 12px 18px 18px; }
+  }
+</style>
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- New Chat Form -->
-        <form action="{{ url_for('new_chat') }}" method="POST" style="margin: 0; width: 100%;">
-            <button type="submit" class="new-chat-btn" style="width: 100%;">
-                <span>+</span> New chat
-            </button>
-        </form>
-        
-        <!-- Chat History List -->
-        <div class="chat-list" style="flex: 1; overflow-y: auto; margin-top: 10px; display: flex; flex-direction: column; gap: 5px;">
-            {% for chat in all_chats %}
-            <a href="{{ url_for('load_chat', session_id=chat.id) }}" 
-               style="color: var(--text-sidebar); text-decoration: none; padding: 10px; border-radius: 6px; 
-                      background-color: {% if chat.id == current_session_id %}#2a2b32{% else %}transparent{% endif %};
-                      display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9em;">
-                💬 {{ chat.title }}
-            </a>
-            {% endfor %}
-        </div>
-        
-        <!-- Clear Current Conversation -->
-        <!-- Clear Current Conversation & Theme Toggle -->
-        <div class="sidebar-bottom">
-            <!-- Theme Toggle Button -->
-            <button id="theme-toggle" class="btn-clear" style="margin-bottom: 5px;">
-                🌙 Dark Mode
-            </button>
-            
-            <!-- Existing Clear Form -->
-            <form class="clear-form" action="{{ url_for('clear_session') }}" method="POST">
-                <button type="submit" class="btn-clear">🗑️ Clear Current Chat</button>
-            </form>
-        </div>
+<div class="app">
+  <aside class="sidebar">
+    <button class="new-chat-btn" type="button" onclick="createNewChat()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      New chat
+    </button>
+
+    <div class="session-list" id="sessionList"></div>
+
+    <div class="sidebar-footer">
+      <button class="footer-btn" type="button" onclick="toggleTheme()" aria-label="Toggle light and dark mode">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="4.2" y1="4.2" x2="6.3" y2="6.3"></line>
+          <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="23" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="6.3" y2="17.7"></line>
+          <line x1="17.7" y1="6.3" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"></circle>
+          <circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"></circle>
+          <circle cx="20.5" cy="10" r="0.7" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <span id="themeLabel">Light Mode</span>
+      </button>
+
+      <button class="footer-btn" type="button" onclick="clearCurrentChat()" aria-label="Clear current chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+          <rect x="6" y="7" width="12" height="14" rx="1"></rect>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+        Clear Current Chat
+      </button>
+
+      <button class="footer-btn" type="button" onclick="openSettings()" aria-label="API settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+          <line x1="4" y1="18" x2="20" y2="18"></line>
+          <circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+        </svg>
+        API Settings
+      </button>
     </div>
+  </aside>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Flash Messages -->
-        <div class="flash-messages">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
+  <main class="chat-area">
+    <div class="messages" id="messages"></div>
 
-        <!-- Chat History -->
-        <div class="chat-container" id="chat-box">
-            {% if not chat_history %}
-                <div class="message-row ai">
-                    <div class="message-content">
-                        <div class="avatar ai">AI</div>
-                        <div class="text">Hello! I am the RoyalPMS AI. How can I help you today?</div>
-                    </div>
-                </div>
-            {% else %}
-                {% for msg in chat_history %}
-                    <div class="message-row {{ msg.sender }}">
-                        <div class="message-content">
-                            <div class="avatar {{ msg.sender }}">
-                                {% if msg.sender == 'user' %} U {% else %} AI {% endif %}
-                            </div>
-                            <div class="text" style="width: 100%;">
-                                {{ msg.text }}
-                                
-                                <!-- Error State & Resend Button -->
-                                {% if msg.sender == 'user' and msg.status == 'error' %}
-                                    <div style="font-size: 0.8rem; color: #dc2626; margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-                                        <span>Error sending message</span>
-                                        <form action="{{ url_for('send_message') }}" method="POST" style="margin: 0; display: inline-block;">
-                                            <input type="hidden" name="session_id" value="{{ current_session_id }}">
-                                            <input type="hidden" name="message" value="{{ msg.text }}">
-                                            <input type="hidden" name="is_resend" value="true">
-                                            <button type="submit" title="Resend message" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 1rem; display: flex; align-items: center;">
-                                                🔄
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% endif %}
-                                
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-
-        <!-- Input Box -->
-        <div class="input-wrapper">
-            <form action="{{ url_for('send_message') }}" method="POST" class="input-form">
-                <input type="hidden" name="session_id" value="{{ current_session_id }}">
-                <input type="text" name="message" placeholder="Send a message..." required autofocus autocomplete="off">
-                <button type="submit">➤</button>
-            </form>
-        </div>
+    <div class="input-bar">
+      <div class="input-wrap">
+        <textarea id="messageInput" placeholder="Send a message..." rows="1"></textarea>
+        <button class="send-btn" type="button" id="sendBtn" onclick="sendMessage()" aria-label="Send message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12,5 19,12 12,19"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
+  </main>
+</div>
 
-    <script>
-        // --- Theme Toggling Logic ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        
-        // Apply saved theme on page load
-        if (currentTheme === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeToggleBtn.innerHTML = '☀️ Light Mode';
-        }
+<div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-label="API settings">
+  <div class="modal">
+    <h3>API Settings</h3>
+    <p class="hint">
+      Point this at your RoyalPMS FastAPI server (the address uvicorn prints when you run it).
+      If you serve this file from that same app, you can leave it as-is or set it blank to use relative paths.
+    </p>
+    <label for="apiUrlInput">API Base URL</label>
+    <input id="apiUrlInput" type="text" placeholder="http://localhost:8000" />
+    <div class="modal-actions">
+      <button class="btn-cancel" type="button" onclick="closeSettings()">Cancel</button>
+      <button class="btn-save" type="button" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
 
-        // Toggle theme on click
-        themeToggleBtn.addEventListener('click', () => {
-            let theme = document.documentElement.getAttribute('data-theme');
-            
-            if (theme === 'dark') {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-                themeToggleBtn.innerHTML = '🌙 Dark Mode';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                themeToggleBtn.innerHTML = '☀️ Light Mode';
-            }
-        });
-        
-        // Auto-scroll to bottom of the chat
-        const chatBox = document.getElementById('chat-box');
-        if (chatBox) {
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+<script>
+// ---------- State ----------
+let sessions = {};
+let currentSessionId = null;
+let apiBaseUrl = 'http://localhost:8000';
+let isSending = false;
 
-        // Auto-hide flash messages after 1.75 seconds (1750 milliseconds)
-        setTimeout(() => {
-            const flashes = document.querySelectorAll('.flash');
-            flashes.forEach(flash => {
-                // Add a smooth fade-out transition
-                flash.style.transition = "opacity 0.5s ease";
-                flash.style.opacity = "0";
-                
-                // Remove the element from the page after it fades out
-                setTimeout(() => flash.remove(), 1000000000);
-            });
-        }, 1750);
-    </script>
+const GREETING = 'Hello! I am the RoyalPMS AI. How can I help you today?';
+
+// ---------- Helpers ----------
+function uid() {
+  return 'sess-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function apiUrl(path) {
+  const base = (apiBaseUrl || '').trim().replace(/\/$/, '');
+  return base + path;
+}
+
+function createSessionObject() {
+  return { id: uid(), title: 'New Chat', messages: [] };
+}
+
+// ---------- Session management ----------
+function createNewChat() {
+  const s = createSessionObject();
+  sessions[s.id] = s;
+  currentSessionId = s.id;
+  renderSessionList();
+  renderMessages();
+  focusInput();
+}
+
+function switchSession(id) {
+  if (id === currentSessionId) return;
+  currentSessionId = id;
+  renderSessionList();
+  renderMessages();
+  focusInput();
+}
+
+async function clearCurrentChat() {
+  const id = currentSessionId;
+  if (!id) return;
+  try {
+    await fetch(apiUrl('/chat/' + id), { method: 'DELETE' });
+  } catch (err) {
+    // Ignore network errors here; we still clear the local view below.
+  }
+  sessions[id].messages = [];
+  sessions[id].title = 'New Chat';
+  renderSessionList();
+  renderMessages();
+}
+
+// ---------- Rendering ----------
+function renderSessionList() {
+  const container = document.getElementById('sessionList');
+  container.innerHTML = '';
+  const ids = Object.keys(sessions).reverse();
+
+  if (ids.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-sessions';
+    empty.textContent = 'No chats yet';
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const id of ids) {
+    const s = sessions[id];
+    const btn = document.createElement('button');
+    btn.className = 'session-item' + (id === currentSessionId ? ' active' : '');
+    btn.type = 'button';
+
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('width', '15');
+    icon.setAttribute('height', '15');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('stroke', 'currentColor');
+    icon.setAttribute('stroke-width', '2');
+    icon.setAttribute('stroke-linecap', 'round');
+    icon.setAttribute('stroke-linejoin', 'round');
+    icon.innerHTML = '<rect x="3" y="4" width="18" height="12" rx="2" ry="2"></rect><polygon points="7,16 7,20 11,16"></polygon>';
+
+    const title = document.createElement('span');
+    title.className = 'session-title';
+    title.textContent = s.title;
+
+    btn.appendChild(icon);
+    btn.appendChild(title);
+    btn.addEventListener('click', function () { switchSession(id); });
+    container.appendChild(btn);
+  }
+}
+
+function renderMessages() {
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+  const session = sessions[currentSessionId];
+  container.appendChild(makeMessageRow('assistant', GREETING, false));
+  for (const m of session.messages) {
+    container.appendChild(makeMessageRow(m.role, m.content, !!m.error));
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function makeMessageRow(role, content, isError) {
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + role + (isError ? ' error' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + role;
+  avatar.textContent = role === 'assistant' ? 'AI' : 'U';
+
+  const text = document.createElement('div');
+  text.className = 'msg-text';
+  text.textContent = content;
+
+  row.appendChild(avatar);
+  row.appendChild(text);
+  return row;
+}
+
+function showTyping() {
+  const container = document.getElementById('messages');
+  const row = document.createElement('div');
+  row.className = 'msg-row assistant';
+  row.id = 'typingRow';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar assistant';
+  avatar.textContent = 'AI';
+
+  const text = document.createElement('div');
+  text.className = 'msg-text typing';
+  text.innerHTML = '<span></span><span></span><span></span>';
+
+  row.appendChild(avatar);
+  row.appendChild(text);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+  const row = document.getElementById('typingRow');
+  if (row) row.remove();
+}
+
+// ---------- Sending messages ----------
+async function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const text = input.value.trim();
+  if (!text || isSending || !currentSessionId) return;
+
+  const session = sessions[currentSessionId];
+  session.messages.push({ role: 'user', content: text });
+  if (session.title === 'New Chat') {
+    session.title = text.slice(0, 30) + (text.length > 30 ? '…' : '');
+  }
+
+  input.value = '';
+  autoResize(input);
+  renderSessionList();
+  renderMessages();
+  showTyping();
+  setSending(true);
+
+  try {
+    const res = await fetch(apiUrl('/chat'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: currentSessionId, message: text })
+    });
+
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const errJson = await res.json();
+        detail = errJson.detail || '';
+      } catch (parseErr) {
+        // response body wasn't JSON; ignore
+      }
+      throw new Error('Server responded ' + res.status + (detail ? ': ' + detail : ''));
+    }
+
+    const data = await res.json();
+    const content = data.response || '(The AI returned an empty response. Please try again.)';
+    hideTyping();
+    session.messages.push({ role: 'assistant', content: content });
+  } catch (err) {
+    hideTyping();
+    const friendly = (err && err.message && err.message.indexOf('Failed to fetch') !== -1)
+      ? 'Could not reach the RoyalPMS API at ' + (apiBaseUrl || '(same origin)') + '. Make sure the server is running and CORS is enabled.'
+      : (err && err.message) || 'Something went wrong.';
+    session.messages.push({ role: 'assistant', content: friendly, error: true });
+  } finally {
+    setSending(false);
+    renderMessages();
+    focusInput();
+  }
+}
+
+function setSending(state) {
+  isSending = state;
+  document.getElementById('sendBtn').disabled = state;
+}
+
+// ---------- Theme ----------
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const isLight = document.body.classList.contains('light');
+  document.getElementById('themeLabel').textContent = isLight ? 'Dark Mode' : 'Light Mode';
+}
+
+// ---------- Settings modal ----------
+function openSettings() {
+  document.getElementById('apiUrlInput').value = apiBaseUrl;
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+  const val = document.getElementById('apiUrlInput').value.trim();
+  apiBaseUrl = val;
+  closeSettings();
+}
+
+// ---------- Input box ----------
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+}
+
+function focusInput() {
+  const el = document.getElementById('messageInput');
+  if (el) el.focus();
+}
+
+// ---------- Init ----------
+function init() {
+  const input = document.getElementById('messageInput');
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  input.addEventListener('input', function () {
+    autoResize(input);
+  });
+
+  document.getElementById('settingsModal').addEventListener('click', function (e) {
+    if (e.target.id === 'settingsModal') closeSettings();
+  });
+
+  createNewChat();
+}
+
+init();
+</script>
 </body>
 </html>
