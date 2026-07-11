@@ -1,6 +1,7 @@
 import os
 import json
 from aitools import *
+from google.genai import types
 
 # ========================CONFIG====================
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEE")
@@ -47,51 +48,104 @@ available_main_tools = {
     "insert_into_table": insert_into_table
 }
 
+# main_tools = [
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "display_table_data",
+#             "description": "Display data from any table in the database. The AI should specify the table name and any filters if needed in the arguments.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "table_name": {"type": "string"},
+#                     "filters": {
+#                         "type": "object",
+#                         "description": "Key-value pairs for filtering the data, where the key is the column name and the value is the filter value."
+#                     }
+#                 }
+#             }
+#         }
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "find_relevant_tables",
+#             "description": "This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.once you get the relevant tables from this tool, call the display_table_data tool to display data from those tables.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "query": {"type": "string"}
+#                 }
+#             }
+#         }
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "insert_into_table",
+#             "description": "This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted. if it returns an error then read the error message and try to fix the data and call the tool again. If you are unable to fix the data, report the issue to the user and do not perform the insert operation.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "table_name": {"type": "string"},
+#                     "data": {"type": "object"}
+#                 }
+#             }
+#         }
+#     }
+# ]
+
 main_tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "display_table_data",
-            "description": "Display data from any table in the database. The AI should specify the table name and any filters if needed in the arguments.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "table_name": {"type": "string"},
-                    "filters": {
-                        "type": "object",
-                        "description": "Key-value pairs for filtering the data, where the key is the column name and the value is the filter value."
-                    }
+    types.Tool(
+        function_declarations=[
+            types.FunctionDeclaration(
+                name="display_table_data",
+                description="Display data from any table in the database. The AI should specify the table name and any filters if needed in the arguments.",
+                parameters={
+                    "type": "OBJECT",
+                    "properties": {
+                        "table_name": {"type": "STRING"},
+                        "filters": {
+                            "type": "OBJECT",
+                            "description": "Key-value pairs for filtering the data, where the key is the column name and the value is the filter value."
+                        }
+                    },
+                    "required": ["table_name"]  # Added based on description, remove if optional
                 }
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "find_relevant_tables",
-            "description": "This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.once you get the relevant tables from this tool, call the display_table_data tool to display data from those tables.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string"}
+            )
+        ]
+    ),
+    types.Tool(
+        function_declarations=[
+            types.FunctionDeclaration(
+                name="find_relevant_tables",
+                description="This tool calls an AI query to find relevant tables in the database. Provide a proper query to the AI and use the results to perform other tool calls effectively.once you get the relevant tables from this tool, call the display_table_data tool to display data from those tables.",
+                parameters={
+                    "type": "OBJECT",
+                    "properties": {
+                        "query": {"type": "STRING"}
+                    },
+                    "required": ["query"]
                 }
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "insert_into_table",
-            "description": "This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted. if it returns an error then read the error message and try to fix the data and call the tool again. If you are unable to fix the data, report the issue to the user and do not perform the insert operation.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "table_name": {"type": "string"},
-                    "data": {"type": "object"}
+            )
+        ]
+    ),
+    types.Tool(
+        function_declarations=[
+            types.FunctionDeclaration(
+                name="insert_into_table",
+                description="This tool calls an AI query to insert data into a specified table in the database. Provide the table name and the data to be inserted. if it returns an error then read the error message and try to fix the data and call the tool again. If you are unable to fix the data, report the issue to the user and do not perform the insert operation.",
+                parameters={
+                    "type": "OBJECT",
+                    "properties": {
+                        "table_name": {"type": "STRING"},
+                        "data": {"type": "OBJECT"}
+                    },
+                    "required": ["table_name", "data"]
                 }
-            }
-        }
-    }
+            )
+        ]
+    )
 ]
 
 # =================== CORE AI LOOP ==================================
@@ -107,7 +161,7 @@ def get_ai_response(session_memory: list, user_message: str) -> str:
     })
 
     while True:
-        response = call_model(session_memory, main_tools)
+        response = callgem(session_memory, main_tools)
         assistant_message = response["choices"][0]["message"] 
 
         session_memory.append({
